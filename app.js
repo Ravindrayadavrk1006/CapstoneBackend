@@ -6,7 +6,7 @@ var Seller=require('./models/sellerSignUp');
 var Buyer=require("./models/buyerSignUp");
 const tempRouter=require('./routes/temp');
 const AddItemRouter=require('./routes/addItem');
-
+const ItemsRouter=require('./routes/items');
 const mongoose =require('mongoose');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -52,7 +52,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/user/buyer', BuyerRouter);
 //=>   /user/seller/signUp or signIn
 app.use('/user/seller',SellerRouter);
-app.use('/',tempRouter);
+app.use('/',ItemsRouter);
 app.use('/user/seller/dashboard',AddItemRouter);
 //SERIALIZING THE BUYER OR SELLER
  passport.serializeUser((user,done)=>{
