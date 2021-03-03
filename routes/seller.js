@@ -77,7 +77,7 @@ router.post('/signUp',(req,res)=>{
                                                                 console.log("seller additional info added",sellerInfo);
                                                                 res.statusCode=200;
                                                                 res.send(succesMsg);
-                                                                res.redirect('/user/signIn')
+                                                                // res.redirect('/user/signIn')
                                                             })
                                                             .catch(err=>{
                                                                 console.log("seller additional info error",err);
@@ -106,9 +106,22 @@ router.post('/signUp',(req,res)=>{
 //login handle
 router.post('/signIn',(req,res,next)=>{
     passport.authenticate('seller',{
-      successRedirect:'/user/seller/dashboard',
-      failureRedirect:'/user/seller/signIn',
-      failureFlash:true,   
+    //   successRedirect:'/user/seller/dashboard',
+      failureRedirect:'/user/seller/signIn',   
+    },(err,user,info)=>{
+        if(err)
+        {
+            console.log("this is error in post signIn of seller",err)
+        }
+        if(!user)
+        {
+            console.log("post signIn message=>",info.msg)
+            // res.write(info.msg);
+        }
+         req.logIn(user, function(err) {
+      if (err) { return next(err); }
+      return res.redirect('/user/seller/dashboard');
+    });
     })
     (req,res,next);
 })

@@ -60,7 +60,7 @@ router.post('/signUp',(req,res)=>{
                                             console.log("user saved to the db");
                                             res.statusCode=200;
                                             res.send("success_msg You are now registered and can log in");
-                                            res.redirect('/user/signIn')
+                                            // res.redirect('/user/signIn')
 
                                         })
                                 console.log("the data is logged from the buyer signup=>",result);
@@ -93,6 +93,14 @@ router.post('/signIn',(req,res,next)=>{
 router.get('/dashboard',[ensureAuthenticated],(req,res)=>{
     console.log("this is the buyer dashboard");
     res.send(req.user);
+      buyerAdditionalInfo
+            .find({buyerId:req.user.id})
+            .then(result=>{
+                res.send({
+                    userInfo:req.user,
+                    additionalInfo:result
+                })
+            })
 })
 router.post('/additionalInfo',(req,res,next)=>{
     var buyerId=req.user.id;

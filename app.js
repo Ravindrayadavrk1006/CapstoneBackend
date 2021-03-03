@@ -4,6 +4,7 @@ var path = require('path');
 //ROUTES REQUIRE
 var Seller=require('./models/sellerSignUp');
 var Buyer=require("./models/buyerSignUp");
+var Educator=require("./models/educatorSignUp");
 const tempRouter=require('./routes/temp');
 const AddItemRouter=require('./routes/addItem');
 const ItemsRouter=require('./routes/items');
@@ -14,8 +15,9 @@ var bodyParser=require('body-parser');
 var port =process.env.PORT||3001;
 var indexRouter = require('./routes/index');
 var BuyerRouter = require('./routes/buyer');
-const session=require('express-session')
+const session=require('express-session') 
 var SellerRouter=require('./routes/seller'); 
+var EducatorRouter=require("./routes/educator")
 const databaseName="artworld";
 const url=`mongodb://localhost:27017/${databaseName}`
 const mongoUrl=process.env.MONGODB_URI || url
@@ -26,7 +28,7 @@ const passport=require('passport');
 var passRoute=require('./config/passport');
 passRoute.buyer(passport);
 passRoute.seller(passport);
-
+passRoute.educator(passport);
 
 //EXPRESS SESSION
 app.use(session({
@@ -52,6 +54,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/user/buyer', BuyerRouter);
 //=>   /user/seller/signUp or signIn
 app.use('/user/seller',SellerRouter);
+app.use("/user/educator",EducatorRouter)
 app.use('/',ItemsRouter);
 app.use('/user/seller/dashboard',AddItemRouter);
 //SERIALIZING THE BUYER OR SELLER
@@ -66,7 +69,7 @@ app.use('/user/seller/dashboard',AddItemRouter);
         }
       done(null,key);
    }
-   else
+   else if (user.isSeller !== undefined)
    {
       console.log(user);
       var key={
@@ -75,9 +78,29 @@ app.use('/user/seller/dashboard',AddItemRouter);
       }
       done(null,key)
    }
+   else
+   {
+     var key={
+       id:user.id,
+       type:"Educator"
+     }
+     done(null,key)
+   }
     })
-    passport.deserializeUser((key,done)=> {
-      var Model=key.type==="Buyer"?Buyer:Seller
+passport.deserializeUser((key,done)=> {
+      var Model;
+      if(key.type==="Buyer")
+      {
+        Model=Buyer;
+      }
+      else if(key.type=== "Seller")
+      {
+        Model=Seller;
+      }
+      else
+      {
+        Model=Educator;
+      }
       Model.findById(key.id,(err,user)=>{
         done(err,user);
       })
@@ -115,3 +138,5 @@ app.listen(port,()=>{
   console.log("the server is running at localhost:",port);
 })
 module.exports = app;
+
+ 

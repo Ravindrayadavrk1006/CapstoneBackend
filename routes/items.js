@@ -17,8 +17,11 @@ router.get('/items',(req,res,next)=>{
     Items
       .find({category:category})
       .then(result=>{
-       console.log("items found",result);
-       res.send(result);
+         console.log("items found",result);
+         res.send(result);
+      })
+      .catch(err=>{
+         console.log("error raised while quering /items",err);
       })
 })
 module.exports=router;
