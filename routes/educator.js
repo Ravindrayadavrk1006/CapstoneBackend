@@ -15,12 +15,12 @@ var storage=multer.diskStorage({
   },
   filename:function(req,file,cb)
   {
-      cb(null,new Date().toISOString().replace(/[\/\\:]/g, "_")+file.originalname);
+      cb(null,new Date().toISOString().replace(/[\/\\:]/g, "_"));
   }
 })
 var uploadVideo = multer({storage:storage}).single('video');
 const router=express.Router();
-router.post('/signUp',(req,res)=>{
+router.post('/signUp',(req,res,next)=>{
     var {phone,email,password,confirmPassword,fullname}=req.body;
     var errors=[]
     if(!phone||!email||!fullname||!password||!confirmPassword)
@@ -137,6 +137,7 @@ router.get('/dashboard',[ensureAuthenticated],(req,res)=>{
     // res.send(req.user);
 })
 router.post('/addBlog',[educatorAuth],(req,res,next)=>{
+      console.log(req.user.user);
       var educatorId=req.user.id;
       var title=req.body.title;
       var subTitle=req.body.subTitle;
@@ -170,13 +171,16 @@ router.post('/basicInfo',(req,res,next)=>{
              .updateOne({educatorId:educatorId},{$set:{address:address,profilePicUrl:profilePicUrl}})         
 })
 router.post("/addVideos",[uploadVideo],(req,res,next)=>{
+    //     console.log("this is from the /addVideos",req.user.id);
+    console.log("i entered in add videos");
+    console.log("req.user.id",req.user.id);
       var educatorId=req.user.id;
-      var video=req['files'];
+      var video=req['file'];
+      console.log(video);
       var tempVid;
-      for(vid in video)
-      {
-        tempVid=fs.readFileSync(path.join(vid['path']))
-      }
+      
+      
+        tempVid=fs.readFileSync(path.join(video['path']))
       var tags=req.body.tags;
       var videoTitle=req.body.title;
       var description=req.body.description;
@@ -191,10 +195,24 @@ router.post("/addVideos",[uploadVideo],(req,res,next)=>{
               .findOne({educatorId:educatorId})
               .then(result=>{
                    tempVidArray=result.videos
-              })
-      tempVidArray.push(tempVidObject);
-      educatorAdditionalInfo
-               .updateOne({educatorId:educatorId},{$set:{videos:tempVidArray}})
+                   tempVidArray.push(tempVidObject);
+                   console.log("vid array",tempVidArray);
+                   educatorAdditionalInfo
+                        .updateOne({educatorId:educatorId},{$set:{videos:tempVidArray}})
+                        .then(result=>
+                            {
+                                console.log("updated the videos list",result)
+                                res.send("video added to the database")
+                            })
+                        .catch(err=>
+                            {
+                                console.log("error raised inside the catch of add videos",err);
+                            }
+                            )
+                        
+                      })
+      
+    
 })
 //logout handle
 router.get('/logout',(req,res)=>{

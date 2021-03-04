@@ -57,6 +57,10 @@ app.use('/user/seller',SellerRouter);
 app.use("/user/educator",EducatorRouter)
 app.use('/',ItemsRouter);
 app.use('/user/seller/dashboard',AddItemRouter);
+// app.get('/',(req,res,next)=>{
+//   // res.send("this is homepage");
+//   res.render("homepage.js");
+// })
 //SERIALIZING THE BUYER OR SELLER
  passport.serializeUser((user,done)=>{
    console.log(user.id);
@@ -99,15 +103,14 @@ passport.deserializeUser((key,done)=> {
       }
       else
       {
+        console.log("entered in the diserializesector")
         Model=Educator;
       }
       Model.findById(key.id,(err,user)=>{
         done(err,user);
       })
     })
-app.get('/',(req,res,next)=>{
-  res.send("this is homepage");
-})
+app.use("/temp",tempRouter)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
