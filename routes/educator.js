@@ -6,7 +6,7 @@ const path=require('path')
 const Educator=require('../models/educatorSignUp')
 const educatorAdditionalInfo=require('../models/educatorAdditionalInfo');
 const bcrypt=require('bcryptjs')
-const {ensureAuthenticated,adminAuth}=require('../config/auth');
+const {ensureAuthenticated,adminAuth,sellerAuth,buyerAuth,educatorAuth}=require('../config/auth');
 const multer=require('multer');
 var storage=multer.diskStorage({
   destination:function(req,file,cb)
@@ -136,7 +136,7 @@ router.get('/dashboard',[ensureAuthenticated],(req,res)=>{
             })
     // res.send(req.user);
 })
-router.post('/addBlog',(req,res,next)=>{
+router.post('/addBlog',[educatorAuth],(req,res,next)=>{
       var educatorId=req.user.id;
       var title=req.body.title;
       var subTitle=req.body.subTitle;
@@ -148,14 +148,19 @@ router.post('/addBlog',(req,res,next)=>{
       educatorAdditionalInfo
              .findOne({educatorId:educatorId})
              .then(result=>{
-                 oldBlogs=result.blogs;
+                    oldBlogs=result.blogs;
+                    oldBlogs.push(newBlogObject);
+                    console.log(oldBlogs);
+                    educatorAdditionalInfo
+                        .updateOne({educatorId:educatorId},{$set:{blogs:oldBlogs}})
+                        .then(result=>{console.log(result)
+                    res.send("blog saved succesfully")})
+              .catch(err=>console.log("error while adding blog ",err))
              })
              .catch(err=>{
                 console.log("error raised while adding blog",err);
              })
-       oldBlogs.push(newBlogObject);
-      educatorAdditionalInfo
-              .updateOne({educatorId:educatorId},{$set:{blogs:oldBlogs}})
+      
 })
 router.post('/basicInfo',(req,res,next)=>{
     var educatorId=req.user.id;
