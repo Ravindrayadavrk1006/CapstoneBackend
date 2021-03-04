@@ -19,6 +19,7 @@ var storage=multer.diskStorage({
   }
 })
 var uploadVideo = multer({storage:storage}).single('video');
+var photoUpload=multer({storage:storage}).single('profilePic')
 const router=express.Router();
 router.post('/signUp',(req,res,next)=>{
     var {phone,email,password,confirmPassword,fullname}=req.body;
@@ -163,12 +164,18 @@ router.post('/addBlog',[educatorAuth],(req,res,next)=>{
              })
       
 })
-router.post('/basicInfo',(req,res,next)=>{
+router.post('/basicInfo',[photoUpload],(req,res,next)=>{
+    var photo=req.file;
+    var tempPhoto=fs.readFileSync(path.join(photo['path']))
     var educatorId=req.user.id;
-    var address=req.user.address;
-    var profilePicUrl=req.user.profilePicUrl;
+    var address=req.body.address;
+    // var profilePicUrl=req.user.profilePicUrl;
     educatorAdditionalInfo
-             .updateOne({educatorId:educatorId},{$set:{address:address,profilePicUrl:profilePicUrl}})         
+             .updateOne({educatorId:educatorId},{$set:{address:address,profilePicUrl:tempPhoto}})   
+             .then(result=>{
+                 console.log("profile updated")
+                 res.send("succesfully updated")
+             })      
 })
 router.post("/addVideos",[uploadVideo],(req,res,next)=>{
     //     console.log("this is from the /addVideos",req.user.id);

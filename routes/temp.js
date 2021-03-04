@@ -6,4 +6,7 @@ router.get('/check',(req,res,next)=>{
 router.get("/signIn",(req,res,next)=>{
       res.render("singIn.ejs");
 })
+router.get("/basicInfo",(req,res,next)=>{
+ res.render("basicInfo.ejs")
+})
 module.exports=router;
