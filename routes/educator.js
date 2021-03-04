@@ -196,41 +196,6 @@ router.post("/addVideos",[uploadVideo],(req,res,next)=>{
       educatorAdditionalInfo
                .updateOne({educatorId:educatorId},{$set:{videos:tempVidArray}})
 })
-// router.post('/additionalInfo',(req,res,next)=>{
-//     var educatorId=req.user.id;
-//     var {address,profilePicUrl,}=req.body;
-//     const tempAddresArray=[];
-//     tempAddresArray.push(address);
-//     buyerAdditionalInfo
-//         .findOne({buyerId:buyerId})
-//         .then((info)=>{
-//             console.log("this is old info stored",info)
-//             if(info != null || info != undefined)
-//             {
-//                 var oldAddress=info.address;
-//                 oldAddress.map(add=>tempAddresArray.push(add))
-//             }
-//             buyerAdditionalInfo
-//                 .updateOne({buyerId:buyerId},{$set:{address:tempAddresArray,profilePicUrl:profilePicUrl}})
-//                 .then(result=>{
-//                     console.log(" addtional information added",result);
-//                         res.send("updated");
-//                 })
-//                 .catch(err=>{
-//                     console.log("error while adding additional seller info",err);
-//                 })
-           
-//         })
-//         .catch(err=>{
-//             console.log("error raise while finding the old data ",err);
-//         })
-//     // let tempObj={
-//     //     buyerId:buyerId,
-//     //     address:tempAddresArray,
-//     //     profilePicUrl
-//     // }
-//     // var BuyerAdditionalInfoInstance=new BuyerAdditionalInfo(tempObj);
-// })
 //logout handle
 router.get('/logout',(req,res)=>{
     req.logOut();
