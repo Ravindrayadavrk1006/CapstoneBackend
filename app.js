@@ -1,6 +1,9 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
+var dotenv=require('dotenv');
+dotenv.config('.env');
+
 //ROUTES REQUIRE
 var Seller=require('./models/sellerSignUp');
 var Buyer=require("./models/buyerSignUp");
@@ -22,6 +25,18 @@ const databaseName="artworld";
 const url=`mongodb://localhost:27017/${databaseName}`
 const mongoUrl=process.env.MONGODB_URI || url
 app = express();
+//firebase admin
+
+// var admin = require("firebase-admin");
+
+// var serviceAccount = require("./config/adminservicekey.json");
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
+
+
+var dotenv=require('dotenv');
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 const passport=require('passport');

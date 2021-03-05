@@ -1,5 +1,57 @@
 const express=require('express');
 var passport=require('passport');
+const cloudinary=require("cloudinary").v2;
+//cloudinary setup
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDNAME, 
+  api_key: process.env.API_KEY, 
+  api_secret:process.env.API_SECRET 
+});
+
+
+
+// const {Storage}=require("@google-cloud/storage");
+// //firebase
+// var admin = require("firebase-admin");
+
+// var serviceAccount = require("../config/adminservicekey.json");
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   storageBucket:"gs://artworld-cfcb1.appspot.com/"
+// });
+
+// const firebaseStorage = new Storage({
+//     keyFilename:process.env.FIREBASE_SERVER_KEY
+//  });
+// var bucket= admin.storage().bucket();
+// //FIREBASE UPLOAD FUNCTION
+
+// // Testing out upload of file
+// const uploadFile = async(fileName) => {
+
+//     // Uploads a local file to the bucket
+//     await firebaseStorage.bucket(bucket).upload(fileName, {
+//         metadata: {
+//             // Enable long-lived HTTP caching headers
+//             // Use only if the contents of the file will never change
+//             // (If the contents will change, use cacheControl: 'no-cache)
+//             cacheControl: 'public, max-age=31536000',
+//         },
+// });
+
+// console.log(`${fileName} uploaded to ${bucketName}.`);
+// }
+
+
+
+
+
+
+
+
+
+
 const fs=require("fs")
 const path=require('path')
 // var authenticate=require('../authenticate');
@@ -15,7 +67,7 @@ var storage=multer.diskStorage({
   },
   filename:function(req,file,cb)
   {
-      cb(null,new Date().toISOString().replace(/[\/\\:]/g, "_"));
+      cb(null,new Date().toISOString().replace(/[\/\\:]/g, "_")+file.originalname);
   }
 })
 var uploadVideo = multer({storage:storage}).single('video');
@@ -166,16 +218,20 @@ router.post('/addBlog',[educatorAuth],(req,res,next)=>{
 })
 router.post('/basicInfo',[photoUpload],(req,res,next)=>{
     var photo=req.file;
-    var tempPhoto=fs.readFileSync(path.join(photo['path']))
     var educatorId=req.user.id;
     var address=req.body.address;
-    // var profilePicUrl=req.user.profilePicUrl;
-    educatorAdditionalInfo
-             .updateOne({educatorId:educatorId},{$set:{address:address,profilePicUrl:tempPhoto}})   
+    cloudinary.uploader.upload(photo["path"],(result)=>{
+        educatorAdditionalInfo
+             .updateOne({educatorId:educatorId},{$set:{address:address,profilePicUrl:result.url}})   
              .then(result=>{
                  console.log("profile updated")
                  res.send("succesfully updated")
-             })      
+             })  
+
+    })
+   
+    // var profilePicUrl=req.user.profilePicUrl;
+        
 })
 router.post("/addVideos",[uploadVideo],(req,res,next)=>{
     //     console.log("this is from the /addVideos",req.user.id);
@@ -186,8 +242,7 @@ router.post("/addVideos",[uploadVideo],(req,res,next)=>{
       console.log(video);
       var tempVid;
       
-      
-        tempVid=fs.readFileSync(path.join(video['path']))
+    // tempVid=fs.readFileSync(path.join(video['path']))
       var tags=req.body.tags;
       var videoTitle=req.body.title;
       var description=req.body.description;
@@ -197,18 +252,26 @@ router.post("/addVideos",[uploadVideo],(req,res,next)=>{
        description,
        tags
       }
-      var tempVidArray=[]
-      educatorAdditionalInfo
+
+    cloudinary.uploader.upload(video["path"],{resource_type: "video"},(error,cloudvideo)=>{
+        if(error)
+        {
+            console.log(error)
+        }
+        else
+        {
+            let tempVidArray=[]
+            // console.log("show result",result)
+            educatorAdditionalInfo
               .findOne({educatorId:educatorId})
               .then(result=>{
                    tempVidArray=result.videos
-                   tempVidArray.push(tempVidObject);
-                   console.log("vid array",tempVidArray);
+                   tempVidArray.push(cloudvideo.url);
                    educatorAdditionalInfo
                         .updateOne({educatorId:educatorId},{$set:{videos:tempVidArray}})
-                        .then(result=>
+                        .then(fresult=>
                             {
-                                console.log("updated the videos list",result)
+                                console.log("updated the videos list",fresult)
                                 res.send("video added to the database")
                             })
                         .catch(err=>
@@ -218,6 +281,40 @@ router.post("/addVideos",[uploadVideo],(req,res,next)=>{
                             )
                         
                       })
+        }
+        
+
+    })
+      //FIREBASE FOR STROING VIDEOS
+    //   uploadFile(tempVid)
+
+
+
+
+
+
+
+
+    //   educatorAdditionalInfo
+    //           .findOne({educatorId:educatorId})
+    //           .then(result=>{
+    //                tempVidArray=result.videos
+    //                tempVidArray.push(tempVidObject);
+    //                console.log("vid array",tempVidArray);
+    //                educatorAdditionalInfo
+    //                     .updateOne({educatorId:educatorId},{$set:{videos:tempVidArray}})
+    //                     .then(result=>
+    //                         {
+    //                             console.log("updated the videos list",result)
+    //                             res.send("video added to the database")
+    //                         })
+    //                     .catch(err=>
+    //                         {
+    //                             console.log("error raised inside the catch of add videos",err);
+    //                         }
+    //                         )
+                        
+    //                   })
       
     
 })
@@ -226,5 +323,10 @@ router.get('/logout',(req,res)=>{
     req.logOut();
     res.redirect('/user/buyer/signIn')
 }) 
+
+
+
+
+
 module.exports=router
 
